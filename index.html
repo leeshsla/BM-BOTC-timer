@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>시계탑 타이머</title>
+    <title>새로운 맞춤형 타이머</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Roboto+Mono:wght@700&display=swap');
@@ -26,6 +26,37 @@
             justify-content: center;
             align-items: center;
         }
+        
+        .main-content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .mode-btn {
+            background: none;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #111;
+            border-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+        .mode-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
 
         .timer-wrapper {
             background-color: rgba(0, 0, 0, 0.55);
@@ -161,31 +192,35 @@
 <body>
 
 <div class="background-container">
-    <div class="timer-wrapper">
-        <div class="display">
-            <div class="arrow-column">
-                <button class="arrow-btn up" data-unit="minutes" data-change="1">▲</button>
-                <button class="arrow-btn down" data-unit="minutes" data-change="-1">▼</button>
+    <div class="main-content-wrapper">
+        <button class="mode-btn active" id="mode-private">밀담 시간</button>
+        <div class="timer-wrapper">
+            <div class="display">
+                <div class="arrow-column">
+                    <button class="arrow-btn up" data-unit="minutes" data-change="1">▲</button>
+                    <button class="arrow-btn down" data-unit="minutes" data-change="-1">▼</button>
+                </div>
+                <span id="minutes">00</span>
+                <span class="colon">:</span>
+                <span id="seconds">00</span>
+                <div class="arrow-column">
+                     <button class="arrow-btn up" data-unit="seconds" data-change="1">▲</button>
+                     <button class="arrow-btn down" data-unit="seconds" data-change="-1">▼</button>
+                </div>
             </div>
-            <span id="minutes">00</span>
-            <span class="colon">:</span>
-            <span id="seconds">00</span>
-            <div class="arrow-column">
-                 <button class="arrow-btn up" data-unit="seconds" data-change="1">▲</button>
-                 <button class="arrow-btn down" data-unit="seconds" data-change="-1">▼</button>
+            
+            <div class="quick-add">
+                <button class="time-btn" data-seconds="300">+5분</button>
+                <button class="time-btn" data-seconds="-300">-5분</button>
+                <button class="time-btn" data-seconds="10">+10초</button>
+                <button class="time-btn" data-seconds="-10">-10초</button>
+            </div>
+            <div class="controls">
+                <button id="start-pause-btn">시작</button>
+                <button id="reset-btn" disabled>리셋</button>
             </div>
         </div>
-        
-        <div class="quick-add">
-            <button class="time-btn" data-seconds="300">+5분</button>
-            <button class="time-btn" data-seconds="-300">-5분</button>
-            <button class="time-btn" data-seconds="10">+10초</button>
-            <button class="time-btn" data-seconds="-10">-10초</button>
-        </div>
-        <div class="controls">
-            <button id="start-pause-btn">시작</button>
-            <button id="reset-btn" disabled>리셋</button>
-        </div>
+        <button class="mode-btn" id="mode-public">공개 토론 시간</button>
     </div>
 </div>
 
@@ -195,30 +230,28 @@
     const startPauseBtn = document.getElementById('start-pause-btn');
     const resetBtn = document.getElementById('reset-btn');
     const adjustmentButtons = document.querySelectorAll('.time-btn, .arrow-btn');
+    const modePrivateBtn = document.getElementById('mode-private');
+    const modePublicBtn = document.getElementById('mode-public');
 
     let timerInterval = null;
     let totalSeconds = 0;
-    let isPaused = false;
 
-    // --- 버그 수정을 위해 로직 재구성 ---
-
-    // 시작/일시정지 버튼 클릭 시 상태에 따라 함수 호출
     startPauseBtn.addEventListener('click', () => {
-        if (isPaused || !timerInterval) {
-            startTimer();
-        } else {
+        if (timerInterval) {
             pauseTimer();
+        } else {
+            startTimer();
         }
     });
 
-    // 리셋 버튼 이벤트
     resetBtn.addEventListener('click', resetTimer);
+    
+    modePrivateBtn.addEventListener('click', () => switchMode(modePrivateBtn));
+    modePublicBtn.addEventListener('click', () => switchMode(modePublicBtn));
 
-    // 시간 조정 버튼 이벤트
     adjustmentButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // 타이머가 '실행 중'일 때만 수정을 막음 (일시정지 상태에서는 허용)
-            if (timerInterval && !isPaused) return;
+            if (timerInterval) return;
             
             let secondsToAdjust = 0;
             if (button.classList.contains('arrow-btn')) {
@@ -231,6 +264,13 @@
             adjustTime(secondsToAdjust);
         });
     });
+
+    function switchMode(selectedButton) {
+        // --- 모드 변경 시 타이머를 리셋하지 않고, UI만 변경하도록 수정 ---
+        modePrivateBtn.classList.remove('active');
+        modePublicBtn.classList.remove('active');
+        selectedButton.classList.add('active');
+    }
 
     function adjustTime(seconds) {
         totalSeconds += seconds;
@@ -247,28 +287,26 @@
             return;
         }
         
-        isPaused = false;
         startPauseBtn.textContent = '일시정지';
         startPauseBtn.classList.add('pause');
-        resetBtn.disabled = false;
-        setAdjustmentButtonsState(true); // 시작하면 시간 조정 버튼 비활성화
+        setAdjustmentButtonsState(true);
+        setModeButtonsState(true);
 
         timerInterval = setInterval(countdown, 1000);
     }
 
     function pauseTimer() {
         clearInterval(timerInterval);
-        timerInterval = null; // 타이머가 멈췄음을 명확히 함
-        isPaused = true;
+        timerInterval = null;
         startPauseBtn.textContent = '계속';
         startPauseBtn.classList.remove('pause');
-        setAdjustmentButtonsState(false); // 일시정지 시 시간 조정 버튼 활성화
+        setAdjustmentButtonsState(false);
+        setModeButtonsState(false); 
     }
 
     function resetTimer() {
         clearInterval(timerInterval);
         timerInterval = null;
-        isPaused = false;
         totalSeconds = 0;
         updateDisplay(totalSeconds);
         
@@ -276,13 +314,12 @@
         startPauseBtn.classList.remove('pause');
         resetBtn.disabled = true;
         setAdjustmentButtonsState(false);
+        setModeButtonsState(false);
     }
 
     function countdown() {
-        if (totalSeconds > 0) {
-            totalSeconds--;
-            updateDisplay(totalSeconds);
-        }
+        totalSeconds--;
+        updateDisplay(totalSeconds);
 
         if (totalSeconds <= 0) {
             clearInterval(timerInterval);
@@ -304,6 +341,11 @@
         adjustmentButtons.forEach(button => {
             button.disabled = disabled;
         });
+    }
+
+    function setModeButtonsState(disabled) {
+        modePrivateBtn.disabled = disabled;
+        modePublicBtn.disabled = disabled;
     }
 
     function playSound() {
