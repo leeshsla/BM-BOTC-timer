@@ -38,9 +38,9 @@
             background: none;
             border: 2px solid rgba(255, 255, 255, 0.4);
             color: rgba(255, 255, 255, 0.6);
-            padding: 10px 25px;
+            padding: 12px 30px; /* 크기 키움 */
             border-radius: 50px;
-            font-size: 18px;
+            font-size: 20px; /* 글씨 크기 키움 */
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -67,7 +67,7 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ffffff;
             padding: 30px 40px;
-            width: 340px;
+            width: 380px; /* 전체 너비 확장 */
             box-sizing: border-box;
             text-align: center;
         }
@@ -77,7 +77,7 @@
             justify-content: center;
             align-items: center;
             font-family: 'Roboto Mono', monospace;
-            font-size: 64px;
+            font-size: 72px; /* 숫자 글씨 크기 키움 */
             font-weight: 700;
             text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
             margin-bottom: 25px;
@@ -96,14 +96,14 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 5px;
+            gap: 8px; /* 화살표 간격 조정 */
         }
 
         .arrow-btn {
             background: none;
             border: none;
             color: white;
-            font-size: 24px;
+            font-size: 28px; /* 화살표 크기 키움 */
             cursor: pointer;
             padding: 0;
             line-height: 1;
@@ -128,10 +128,10 @@
             background-color: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             color: #eee;
-            padding: 8px 10px;
+            padding: 12px 10px;
             white-space: nowrap;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 16px; /* 글씨 크기 키움 */
             font-weight: 700;
             cursor: pointer;
             transition: background-color 0.2s;
@@ -151,8 +151,8 @@
         }
 
         .controls button {
-            padding: 12px;
-            font-size: 16px;
+            padding: 14px; /* 버튼 크기 키움 */
+            font-size: 18px; /* 글씨 크기 키움 */
             font-weight: 700;
             border: none;
             border-radius: 8px;
@@ -220,7 +220,7 @@
                 <button id="reset-btn" disabled>리셋</button>
             </div>
         </div>
-        <button class="mode-btn" id="mode-public">공개 토론 시간</button>
+        <button class="mode-btn" id="mode-public">지명 시간</button>
     </div>
 </div>
 
@@ -266,7 +266,6 @@
     });
 
     function switchMode(selectedButton) {
-        // --- 모드 변경 시 타이머를 리셋하지 않고, UI만 변경하도록 수정 ---
         modePrivateBtn.classList.remove('active');
         modePublicBtn.classList.remove('active');
         selectedButton.classList.add('active');
